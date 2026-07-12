@@ -33,6 +33,10 @@ DEFAULTS = {
     "DITHER": 1,
     "OXIPNG_LEVEL": 6,
     "QUANTIZE": 1,
+    # 中間設定: truecolorを保ったままチャンネルのビット深度を落として高圧縮する。
+    # 0 または 8 = 無効(フル8bit)。5/6/7 を指定するとそのビット数へ量子化(6が画質/サイズの良バランス)。
+    # QUANTIZE=1 が優先される。色を保ちたい場合は QUANTIZE=0 かつ COLOR_BITS=6 を推奨。
+    "COLOR_BITS": 0,
 }
 
 # Pillow が扱える一般的な入力拡張子（形式は問わない方針だが明らかな非画像は除外）
@@ -60,6 +64,16 @@ def load_env() -> dict:
     return cfg
 
 
+def _posterize_rgb(im: "Image.Image", bits: int) -> "Image.Image":
+    """RGB各チャンネルを bits ビットへ量子化（truecolor維持・アルファは温存）。numpy不要。"""
+    shift = 8 - bits
+    step = 1 << shift
+    lut = [min(((i >> shift) << shift) + step // 2, 255) for i in range(256)]
+    r, g, b, a = im.split()
+    r, g, b = r.point(lut), g.point(lut), b.point(lut)
+    return Image.merge("RGBA", (r, g, b, a))
+
+
 def target_size(w: int, h: int, max_edge: int) -> tuple[int, int]:
     """長辺が max_edge を超える場合のみ縮小。拡大はしない。アスペクト比維持。"""
     long_edge = max(w, h)
@@ -80,11 +94,15 @@ def convert_one(src: Path, cfg: dict) -> dict:
         if resized:
             im = im.resize((tw, th), Image.LANCZOS)
 
+        bits = cfg["COLOR_BITS"]
         if cfg["QUANTIZE"]:
             dither = Image.Dither.FLOYDSTEINBERG if cfg["DITHER"] else Image.Dither.NONE
             colors = max(2, min(256, cfg["PALETTE_COLORS"]))
-            # FASTOCTREE はRGBAの透過を保持したままパレット化できる
+            # FASTOCTREE はRGBAの透過を保持したままパレット化できる（最大圧縮・256色上限）
             out_im = im.quantize(colors=colors, method=Image.Quantize.FASTOCTREE, dither=dither)
+        elif 1 <= bits <= 7:
+            # 中間設定: truecolorを維持したままRGB各chをbitsビットへ量子化（透過は保持）
+            out_im = _posterize_rgb(im, bits)
         else:
             out_im = im
 
@@ -131,7 +149,8 @@ def main() -> int:
         return 0
 
     print(f"settings: MAX_EDGE={cfg['MAX_EDGE']} PALETTE_COLORS={cfg['PALETTE_COLORS']} "
-          f"DITHER={cfg['DITHER']} OXIPNG_LEVEL={cfg['OXIPNG_LEVEL']} QUANTIZE={cfg['QUANTIZE']}")
+          f"DITHER={cfg['DITHER']} OXIPNG_LEVEL={cfg['OXIPNG_LEVEL']} QUANTIZE={cfg['QUANTIZE']} "
+          f"COLOR_BITS={cfg['COLOR_BITS']}")
 
     total_in = total_out = 0.0
     ok = 0

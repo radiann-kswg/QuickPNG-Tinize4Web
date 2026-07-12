@@ -31,7 +31,15 @@ PALETTE_COLORS=256   # 高圧縮パレットの色数(2-256)
 DITHER=1             # ディザリング(1=有効/0=無効)
 OXIPNG_LEVEL=6       # oxipng最適化レベル(0-6)
 QUANTIZE=1           # パレット量子化(1=行う/0=可逆最適化のみ)
+COLOR_BITS=0         # 中間設定: truecolor維持でchビット深度削減(0/8=無効, 5/6/7)。QUANTIZE=1時は無視
 ```
+
+### 圧縮モードの選び方（画質 vs サイズ）
+
+- `QUANTIZE=1`: 256色パレットで最大圧縮。グラデーションにバンディングが出やすい（最軽量）
+- `QUANTIZE=0` かつ `COLOR_BITS=6`: **色数を保つ中間設定（推奨）**。truecolorのまま各ch6bit化。
+  高品質（PSNR≈47dB, 約26万色相当）で可逆の約6割サイズ。7=ほぼ無劣化 / 5=やや軽量
+- `QUANTIZE=0` かつ `COLOR_BITS=0`: 完全可逆（最高画質・最大サイズ）
 
 ## 出力要件（すべて必須）
 
@@ -71,10 +79,13 @@ Adobe for creativity コネクタ（MCP）を使って縮小だけをクラウ�
 2. `asset_initialize_file_upload` → transfer URL へ `curl -s -L -X PUT` → `asset_finalize_file_upload`
 3. `image_crop_and_resize({imageURI, options:{fit:"pad", output:{width,height}}, outputFileType:"png"})`
    - width/height = 長辺基準で `MAX_EDGE` に合わせた縮小値（拡大にならないよう原寸を超えない）
-4. 出力URLをダウンロードし、`scripts/tinize.py` の量子化 + strip 段を適用して `output-TinyPNG/` へ
+4. 出力URLをダウンロードし、`scripts/tinize.py` の圧縮 + strip 段（`QUANTIZE` / `COLOR_BITS`）を
+   適用して `output-TinyPNG/` へ。透過を保つため RGBA→（パレットは FASTOCTREE / 中間設定は
+   ビット深度削減）で処理する
 
 > Adobeコネクタは認証（claude.ai → 設定 → コネクタ → Adobe for creativity）が必要。
-> 未接続・不通時はローカル高圧縮パイプラインをそのまま使えばよい。
+> サンドボックスからの転送には `*.adobe.com` / `*.adobe.io` / `*.amazonaws.com` のドメイン許可が要る。
+> 未接続・不通時はローカル高圧縮パイプライン（縮小も LANCZOS でローカル実行）をそのまま使えばよい。
 
 ## フォールバック: ImageMagickのみ（Python/oxipng が無い環境）
 
