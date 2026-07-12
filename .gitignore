@@ -1,0 +1,23 @@
+# 画像アセットはgit管理外（MIT対象外・プライバシー保護のため設定/ドキュメントにも含めない）
+input-IMG/*
+!input-IMG/.gitkeep
+output-TinyPNG/*
+!output-TinyPNG/.gitkeep
+
+# 環境設定
+.env
+
+# 一時ファイル
+*_fresh.png
+alpha_test*.png
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
