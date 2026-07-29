@@ -1,0 +1,5 @@
+# scripts/tinize.py の依存
+# Pillow: 画像の読み込み・縮小(LANCZOS)・パレット量子化(FASTOCTREE)・ビット深度削減
+Pillow>=10
+# pyoxipng: 可逆圧縮 + 補助チャンク(EXIF/pHYs/tEXt等)の全削除
+pyoxipng>=9
