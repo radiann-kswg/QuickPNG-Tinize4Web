@@ -69,6 +69,15 @@ python3 scripts/tinize.py
 
 依存が無い場合: `pip install pillow pyoxipng`
 
+macOS では venv を使う（姉妹リポジトリと並べた親フォルダに共有 `.venv` を作ると使い回せる）。
+Python 3.14 では pyoxipng の配布 wheel が無くソースビルドになるため、初回の導入に数分かかる。
+
+```bash
+python3 -m venv ../.venv
+../.venv/bin/pip install -r requirements.txt
+../.venv/bin/python scripts/tinize.py
+```
+
 ## 任意パイプライン: Adobeハイブリッド（縮小前処理にコネクタを使う場合）
 
 Adobe for creativity コネクタ（MCP）を使って縮小だけをクラウドで行う運用も可能。
@@ -97,6 +106,9 @@ convert "input.ext[0]" -resize "${MAX_EDGE}x${MAX_EDGE}>" -strip \
 ```
 
 `>` フラグにより縮小専用（拡大しない）、`-strip` でメタデータ削除、`PNG8` でパレット高圧縮。
+
+macOS: `brew install imagemagick` の上で `bash scripts/local_fallback.sh`（実行ビット無し）。
+ImageMagick 7系では `convert` の非推奨警告が出るが、結果は同じ。
 
 ## 検証チェックリスト（毎回・全件）
 

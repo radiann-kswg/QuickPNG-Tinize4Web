@@ -33,6 +33,15 @@ python3 scripts/tinize.py
 
 `.env`（無ければ既定値）を読み込み、`input-IMG/` 内の全画像を変換して `output-TinyPNG/` へ出力する。
 
+macOS では venv を使う（姉妹リポジトリと並べた親フォルダに共有 `.venv` を作ると使い回せる）。
+Python 3.14 では pyoxipng がソースビルドになるため、初回の導入に数分かかる。
+
+```bash
+python3 -m venv ../.venv
+../.venv/bin/pip install -r requirements.txt
+../.venv/bin/python scripts/tinize.py
+```
+
 ## 構成
 
 ```
@@ -74,6 +83,7 @@ output-TinyPNG/      # 出力（git管理外）
 - 縮小前処理に Adobe for creativity コネクタを使う運用も可能（`CLAUDE.md` 参照）。
   高圧縮・メタデータ削除の実処理は `scripts/tinize.py` が担う。
 - Python/oxipng が無い環境向けに ImageMagick のみのフォールバック（`scripts/local_fallback.sh`）あり。
+  macOS では `brew install imagemagick` の上で `bash scripts/local_fallback.sh` で実行する。
 
 ## 出力の検証
 
