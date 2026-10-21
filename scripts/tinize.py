@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 from PIL import Image
@@ -172,6 +173,7 @@ def main() -> int:
         ratio = 100 * total_out / total_in if total_in else 0
         print(f"done: {ok}/{len(files)} 件  合計 {total_in/1024:.2f}MB -> "
               f"{total_out/1024:.2f}MB ({ratio:.1f}%)")
+    subprocess.run([sys.executable, str(Path(__file__).with_name("iloveapi_compress.py"))])  # 後段: iLoveAPI 圧縮（.env で有効時のみ）
     return 0
 
 

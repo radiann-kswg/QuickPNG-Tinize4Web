@@ -48,4 +48,6 @@ for f in input-IMG/*.png input-IMG/*.jpg input-IMG/*.jpeg input-IMG/*.webp \
   identify -format "%f | %wx%h | alpha=%A | %b\n" "${out}"
   count=$((count + 1))
 done
+# 後段: iLoveAPI 圧縮（.env で有効時のみ。python3 が無ければ python）
+(command -v python3 >/dev/null && python3 scripts/iloveapi_compress.py) || python scripts/iloveapi_compress.py || true
 echo "done: ${count} file(s)"

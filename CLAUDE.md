@@ -110,6 +110,21 @@ convert "input.ext[0]" -resize "${MAX_EDGE}x${MAX_EDGE}>" -strip \
 macOS: `brew install imagemagick` の上で `bash scripts/local_fallback.sh`（実行ビット無し）。
 ImageMagick 7系では `convert` の非推奨警告が出るが、結果は同じ。
 
+## 任意の後段: iLoveAPI（iLoveIMG）でさらに圧縮
+
+`scripts/iloveapi_compress.py` が、出力フォルダ内の PNG を iLoveAPI の `compressimage` に通して
+元より小さくなったものだけ置き換える。標準ライブラリのみで動く。変換スクリプト（`scripts/tinize.py` / `scripts/local_fallback.sh`）の
+末尾から自動で呼ばれるので、通常は手で実行しなくてよい。Adobeハイブリッドで出力した場合も最後に同じスクリプトを手で実行する。
+
+- `.env` で `ILOVEAPI_COMPRESS=1` と `ILOVEAPI_PUBLIC_KEY=`（https://www.iloveapi.com/ で発行）を設定したときだけ動く。
+  未設定・`0` なら何もしない。`ILOVEAPI_LEVEL` は `low` / `recommended`（既定）/ `extreme`
+- 無料枠は月 2,500 クレジット（1画像 ≈ 1クレジット）。ログ末尾の `remaining_credits` で残量を確認する
+- 安全策: 戻りが PNG でない／寸法が変わった／透過が失われた／元より大きい場合は元ファイルを残す。
+  元にあった pHYs(DPI) チャンクは引き継ぐ（元に無ければ付けない）
+- API へ送るファイル名は常に `image.png`（実ファイル名は外部に出さない）。ファイル内容は iLovePDF の
+  サーバーへ送られ、処理後に削除される（公開情報では1〜2時間）。外部送信が不可の画像では使わない
+- 手動実行: `python3 scripts/iloveapi_compress.py [出力フォルダ]`、自己診断: `--selftest`
+
 ## 検証チェックリスト（毎回・全件）
 
 - PIL で `Image.open(f); im.load()` が通る（ダウンロード切断/破損の検出）
@@ -118,6 +133,7 @@ ImageMagick 7系では `convert` の非推奨警告が出るが、結果は同�
 - 元が透過なら出力も透過（角ピクセル alpha=0 等で確認）
 - pHYs/EXIF/tEXt 等の不要メタデータが残っていない
 - 出力サイズが入力より小さい（高圧縮できている）
+- （iLoveAPI 後段を使った場合）ログで `remaining_credits` と skip/ERR の有無を確認。出力が元より大きくなった件は `keep` として元のまま残る
 
 ## 既知の落とし穴
 
