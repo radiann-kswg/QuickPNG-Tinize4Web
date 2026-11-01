@@ -35,7 +35,7 @@ for f in input-IMG/*.png input-IMG/*.jpg input-IMG/*.jpeg input-IMG/*.webp \
   [ -e "$f" ] || continue
   base=$(basename "$f"); base=${base%.*}
   out="output-TinyPNG/${base}.png"
-  if [ "${QUANTIZE}" = "1" ]; then
+  if [ "${QUANTIZE}" = "1" ] && [ "${PALETTE_COLORS}" != "0" ]; then
     convert "${f}[0]" -resize "${MAX_EDGE}x${MAX_EDGE}>" -strip \
       -quality 95 -define png:compression-level=9 \
       "PNG8:${out}"

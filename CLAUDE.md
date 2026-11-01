@@ -27,7 +27,7 @@
 
 ```
 MAX_EDGE=1180        # 長辺の最大px。超過時のみ縮小、以下なら拡大せず維持
-PALETTE_COLORS=256   # 高圧縮パレットの色数(2-256)
+PALETTE_COLORS=256   # 高圧縮パレットの色数(2-256)。0 = 量子化しない（QUANTIZE=0 と同じ）
 DITHER=1             # ディザリング(1=有効/0=無効)
 OXIPNG_LEVEL=6       # oxipng最適化レベル(0-6)
 QUANTIZE=1           # パレット量子化(1=行う/0=可逆最適化のみ)
@@ -62,7 +62,7 @@ python3 scripts/tinize.py
 
 1. 画像を開き RGBA へ変換（マルチフレームは先頭フレームのみ）
 2. `target_size()` で縮小後寸法を算出（長辺 > `MAX_EDGE` のときのみ、`LANCZOS` で縮小。拡大しない）
-3. `QUANTIZE=1` なら `Image.quantize(method=FASTOCTREE, dither=…)` でパレット化（**透過を保持**）
+3. `QUANTIZE=1` かつ `PALETTE_COLORS` が 0 以外なら `Image.quantize(method=FASTOCTREE, dither=…)` でパレット化（**透過を保持**）
 4. `info` を空にしてから PNG 保存（元メタデータを持ち込まない）
 5. `oxipng.optimize(strip=StripChunks.safe())` で可逆圧縮 + 補助チャンク（メタデータ）を全削除
 6. 出力を開き直して寸法・モードを検証

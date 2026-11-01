@@ -96,7 +96,7 @@ def convert_one(src: Path, cfg: dict) -> dict:
             im = im.resize((tw, th), Image.LANCZOS)
 
         bits = cfg["COLOR_BITS"]
-        if cfg["QUANTIZE"]:
+        if cfg["QUANTIZE"] and cfg["PALETTE_COLORS"]:  # PALETTE_COLORS=0 = 量子化しない
             dither = Image.Dither.FLOYDSTEINBERG if cfg["DITHER"] else Image.Dither.NONE
             colors = max(2, min(256, cfg["PALETTE_COLORS"]))
             # FASTOCTREE はRGBAの透過を保持したままパレット化できる（最大圧縮・256色上限）
